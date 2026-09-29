@@ -4,7 +4,5 @@ Browser app for logging specific Portland-area TriMet buses and trains. Each che
 
 ## Run
 
-1. Copy `.env.example` to `.env`.
-2. Optional: get a free `appID` at [developer.trimet.org](https://developer.trimet.org/) and set `TRIMET_APP_ID` in `.env` (server-only; do not use a `VITE_` prefix). Without a key, nearby vehicles fall back to demo data.
-3. `npm install` then `npm run dev`.
-4. Open the Ride screen. Allow location, or add `?sim=downtown` to the URL to fake GPS in Portland
+1. Copy `.env.example` to `.env`. (you need a trimet app id to run this. This is handled server side in my case but if you want to run it locally just put it in the env)
+2. `npm install` then `npm run dev`.
