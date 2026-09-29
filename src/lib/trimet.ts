@@ -1,4 +1,4 @@
-import type { CardDef, GeoPoint, TransitMode, Vehicle } from '../types';
+import { recordTrimetQuery } from './trimetQueries';
 import { haversineMeters } from './geo';
 
 interface TrimetVehicleRaw {
@@ -116,6 +116,7 @@ function asArray<T>(value: T | T[] | undefined): T[] {
 }
 
 async function trimetGet(pathAndQuery: string): Promise<TrimetResponse> {
+  recordTrimetQuery();
   const ctrl = new AbortController();
   const timer = window.setTimeout(() => ctrl.abort(), 6000);
   try {

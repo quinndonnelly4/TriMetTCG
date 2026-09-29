@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
-import { RideRow } from '../components/RideRow';
+import { useEffect, useMemo, useState } from 'react';
+import { DebugPanel } from '../components/DebugPanel';
+import { routeCompendium } from '../lib/compendium';
 import { listRides } from '../lib/storage';
 import type { Ride } from '../types';
 
@@ -10,15 +11,22 @@ export function LogPage() {
     void listRides().then(setRides);
   }, []);
 
+  const rows = useMemo(() => routeCompendium(rides), [rides]);
+
   return (
     <section className="page">
       <h1 className="page-title">Log</h1>
-      {rides.length === 0 ? <p className="muted">No rides yet</p> : null}
-      <div className="log-list">
-        {rides.map((ride) => (
-          <RideRow key={ride.id} ride={ride} />
+      <div className="compendium">
+        {rows.map((row) => (
+          <p key={row.mode} className="compendium-row">
+            <span>{row.title}</span>
+            <span>
+              {row.ridden}/{row.total}
+            </span>
+          </p>
         ))}
       </div>
+      <DebugPanel />
     </section>
   );
 }

@@ -15,7 +15,7 @@ function AppRoutes() {
   const onHome = location.pathname === '/';
   return (
     <>
-      <div hidden={!onHome}>
+      <div className="home-keep" hidden={!onHome}>
         <HomePage />
       </div>
       <Routes>

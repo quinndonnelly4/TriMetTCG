@@ -1,0 +1,98 @@
+.card-fx .card-tile-face::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 90% at 50% 28%,
+    rgba(255, 255, 255, 0.37) 0%,
+    rgba(255, 255, 255, 0.09) 38%,
+    transparent 68%
+  );
+  background-size: 180% 180%;
+  background-position: var(--shine-x, 70%) var(--shine-y, 8%);
+  mix-blend-mode: screen;
+  opacity: var(--shine-op, 0.21);
+  transition: none;
+}
+
+.card-fx .card-tile-face::after {
+  background: linear-gradient(
+    var(--shine-angle, 118deg),
+    rgba(255, 255, 255, 0.37) 0%,
+    rgba(255, 255, 255, 0) 28%,
+    rgba(255, 255, 255, 0.46) 48%,
+    rgba(255, 255, 255, 0) 66%
+  );
+  background-size: 160% 160%;
+  background-position: var(--shine-x, 70%) var(--shine-y, 8%);
+  mix-blend-mode: screen;
+  opacity: var(--shine-op, 0.21);
+  transition: none;
+}
+
+.card-fx-glare {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: 12px;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(
+      90% 70% at var(--pop-spec, 76% 10%),
+      rgba(255, 255, 255, 0.28) 0%,
+      transparent 52%
+    ),
+    radial-gradient(
+      70% 55% at var(--pop-fill, 12% 86%),
+      rgba(255, 255, 255, 0.08) 0%,
+      transparent 48%
+    ),
+    linear-gradient(
+      var(--shine-angle, 118deg),
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(255, 255, 255, 0) 30%,
+      rgba(255, 255, 255, 0.26) 47%,
+      rgba(255, 255, 255, 0) 63%,
+      rgba(255, 255, 255, 0.05) 100%
+    );
+  background-size: var(--pop-size-a, 170% 170%), var(--pop-size-b, 140% 140%), var(--pop-size-c, 180% 180%);
+  background-position: var(--pop-to-a, 78% 8%), var(--pop-to-b, 18% 82%), var(--pop-to-c, 72% 12%);
+  mix-blend-mode: soft-light;
+}
+
+.card-fx-revealing .card-fx-glare {
+  animation:
+    card-fx-glare-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both,
+    card-fx-glare-out 1.15s 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes card-fx-glare-in {
+  from {
+    opacity: 0;
+    background-position: var(--pop-from-a), var(--pop-from-b), var(--pop-from-c);
+  }
+  to {
+    opacity: var(--pop-peak, 0.62);
+    background-position: var(--pop-to-a), var(--pop-to-b), var(--pop-to-c);
+  }
+}
+
+@keyframes card-fx-glare-out {
+  from {
+    opacity: var(--pop-peak, 0.62);
+    background-position: var(--pop-to-a), var(--pop-to-b), var(--pop-to-c);
+  }
+  to {
+    opacity: 0;
+    background-position: var(--pop-end-a), var(--pop-end-b), var(--pop-end-c);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-fx-revealing .card-fx-glare {
+    animation: none;
+  }
+}

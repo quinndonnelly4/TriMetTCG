@@ -1,5 +1,5 @@
 import { useRef, type MouseEvent, type PointerEvent, type ReactNode, type SVGProps } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 
 function TabIcon({
   children,
@@ -14,11 +14,15 @@ function TabIcon({
 
 function skipPan(target: EventTarget | null) {
   return Boolean(
-    (target as HTMLElement | null)?.closest?.('.pack-overlay, .confirm-overlay, .pack-card'),
+    (target as HTMLElement | null)?.closest?.(
+      '.pack-overlay, .confirm-overlay, .pack-card, .hop-play, .play-field, .ride-recent-grid',
+    ),
   );
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const location = useLocation();
+  const onHome = location.pathname === '/';
   const mainRef = useRef<HTMLElement>(null);
   const pan = useRef({
     x: 0,
@@ -118,15 +122,14 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="app-shell" onDragStart={(event) => event.preventDefault()}>
-      <header className="top-bar">
-        <div className="dest-sign">
-          <span className="dest-sign-kicker">To</span>
-          <span className="logo">TriMet TCG</span>
-        </div>
-      </header>
+    <>
+      <div className="orient-lock" role="alert">
+        <p>Turn your phone upright to play</p>
+      </div>
+      <div className="app-shell" onDragStart={(event) => event.preventDefault()}>
       <main
         ref={mainRef}
+        className={onHome ? 'main-home' : undefined}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -136,16 +139,16 @@ export function AppShell({ children }: { children: ReactNode }) {
         {children}
       </main>
       <nav className="tab-bar">
-        <NavLink to="/" end>
+        <NavLink to={{ pathname: '/', search: location.search }} end>
           <TabIcon>
             <path
               fill="currentColor"
-              d="M12 3.2 3.5 10.2V21h5.2v-6.2h6.6V21h5.2V10.2L12 3.2Z"
+              d="M4 16.2V12h1.1l1-4.4h11.8l1 4.4H20v4.2h-1.6a2.2 2.2 0 0 1-4.4 0H10a2.2 2.2 0 0 1-4.4 0H4Zm4.2-4.2h7.6l-.45-2H8.65l-.45 2Z"
             />
           </TabIcon>
-          Home
+          Ride
         </NavLink>
-        <NavLink to="/collection">
+        <NavLink to={{ pathname: '/collection', search: location.search }}>
           <TabIcon>
             <path
               fill="currentColor"
@@ -154,7 +157,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </TabIcon>
           Album
         </NavLink>
-        <NavLink to="/log">
+        <NavLink to={{ pathname: '/log', search: location.search }}>
           <TabIcon>
             <path
               fill="currentColor"
@@ -165,5 +168,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         </NavLink>
       </nav>
     </div>
+    </>
   );
 }

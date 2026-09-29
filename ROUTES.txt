@@ -1,0 +1,135 @@
+TriMet Collector — all current routes
+======================================
+Source: TriMet GTFS  https://developer.trimet.org/schedule/gtfs.zip
+Pulled: 2026-09-29  (feed service window listed as 2026-09-13 to 2027-02-27)
+
+What this is for
+----------------
+Ride log percentage by type = unique lines ridden / unique lines that exist
+for that type. Check-in uses the Vehicles feed, so a line only counts if
+TriMet is reporting vehicles on it that day. The lists below are the
+scheduled catalog (good denominators). Disruption shuttle buses (287–293)
+are listed separately so you can decide whether they belong in “bus.”
+
+The Portland Aerial Tram is in GTFS but is not TriMet rail/bus; the app
+does not treat it as a ride mode today.
+
+
+MAX  —  5 lines
+---------------
+  90    MAX Red
+ 100    MAX Blue
+ 190    MAX Yellow
+ 200    MAX Green
+ 290    MAX Orange
+
+
+WES  —  1 line
+--------------
+ 203    WES Commuter Rail
+
+
+Streetcar  —  3 lines
+---------------------
+ 193    NS Line
+ 194    A Loop
+ 195    B Loop
+
+
+Bus  —  66 lines  (regular numbered service)
+--------------------------------------------
+   1    Vermont
+   2    FX2 Division
+   4    Fessenden / Woodstock
+   6    Martin Luther King Jr Blvd
+   8    Jackson Park / NE 15th
+   9    Powell Blvd
+  10    Steele
+  11    Rivergate / Marine Dr
+  12    Barbur / Sandy Blvd
+  14    Hawthorne / Foster
+  15    Belmont / NW 23rd
+  16    NW Front Ave
+  17    Holgate / NE 33rd
+  18    Hillside
+  19    Glisan / Canyon Rd
+  20    Burnside / Stark
+  21    Sandy Blvd / 223rd
+  22    Parkrose
+  23    San Rafael
+  24    Fremont / NW 18th
+  25    Glisan / Troutdale Rd
+  26    Thurman / NW 18th
+  29    International Way
+  30    Estacada
+  31    Webster / Beavercreek
+  33    McLoughlin / King Rd
+  34    Oatfield / River Rd
+  35    Macadam / Greeley
+  40    Tacoma / Swan Island
+  43    Taylors Ferry / Marquam Hill
+  44    Capitol Hwy / N Rosa Parks
+  45    Garden Home / Arnold Creek
+  46    North Hillsboro
+  47    Main / Baseline
+  48    Cornell
+  51    Vista / Sunset Blvd
+  52    Farmington / 185th
+  53    Arctic / Allen
+  54    Beaverton-Hillsdale Hwy
+  55    Hamilton
+  56    Scholls Ferry / Marquam Hill
+  57    TV Hwy / Forest Grove
+  59    Walker / Park Way
+  62    Murray Blvd
+  63    Washington Park / SW 6th
+  67    Bethany / 158th
+  70    Milwaukie Ave / 12th
+  71    60th Ave
+  72    Killingsworth / 82nd Ave
+  73    122nd Ave
+  74    162nd Ave
+  75    Cesar Chavez / Lombard
+  76    Hall / Greenburg
+  77    Broadway / Halsey
+  78    Denney / Kerr Pkwy
+  79    Clackamas / Oregon City
+  81    Kane / 257th
+  84    Powell Valley / Orient Dr
+  86    148th Ave
+  87    Airport Way / 181st
+  88    Hart / 198th
+  94    Tigard / Sherwood
+  96    Boones Ferry Rd
+  97    Tualatin-Sherwood / Kruse Way
+ 155    Sunnyside
+ 156    Mather Rd
+
+
+MAX disruption buses  —  5 lines  (optional bus denominator)
+------------------------------------------------------------
+ 287    Blue Eastside Bus
+ 288    Blue Westside Bus
+ 291    Orange Bus
+ 292    Red Bus
+ 293    Yellow Bus
+
+
+Not in app ride types
+---------------------
+ 208    Portland Aerial Tram
+
+
+Suggested log percentages
+-------------------------
+  MAX         unique of 90, 100, 190, 200, 290          / 5
+  WES         203 or not                                 / 1
+  Streetcar   unique of 193, 194, 195                    / 3
+  Bus         unique regular bus numbers above           / 66
+              (add 287–293 if you want shuttle credit)
+
+Totals if you include disruption buses in bus: 71 bus lines.
+Grand total scheduled lines the game can classify
+(MAX + WES + streetcar + regular bus): 75
+With disruption buses: 80
+Plus tram (out of scope): 84 rows in this GTFS routes.txt

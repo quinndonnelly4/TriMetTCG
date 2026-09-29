@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { ChoiceList } from '../components/ChoiceList';
+import { useLocation } from 'react-router-dom';
+import { LinePicker } from '../components/LinePicker';
 import { PackReveal } from '../components/PackReveal';
+import { RideHub } from '../components/RideHub';
+import { StartMenu } from '../components/StartMenu';
 import { createFanfareContext } from '../lib/fanfare';
 import {
-  debugMode,
-  formatDistance,
   haversineMeters,
   parseSimQuery,
   pointAlongPath,
@@ -14,15 +14,12 @@ import {
   SIM_TICK_MS,
 } from '../lib/geo';
 import { guessOnboardLines } from '../lib/onboard';
-import { allCards, completeCheckIn, newRideId } from '../lib/packs';
-import { cooldownRemaining, resetApp } from '../lib/storage';
+import { allCards, cardById, completeCheckIn, newRideId } from '../lib/packs';
+import { cooldownRemaining, listRecentReceipts } from '../lib/storage';
 import {
   companionVehiclesAt,
   fetchVehicles,
-  formatHeadsign,
-  modeLabel,
   riderRouteLabel,
-  routeBadgeClass,
 } from '../lib/trimet';
 import {
   rideTripKey,
@@ -34,20 +31,48 @@ import {
   type Vehicle,
 } from '../types';
 
-const TRANSIT_HINT_MS = 10_000;
 const PICKER_REFRESH_MS = 6_000;
 const CONFIRM_POLL_MS = 3_000;
 const LEAVE_MS = 520;
 const PACK_DELAY_MS = 0;
+const HOP_VALID_HOLD_MS = 1_150;
+const HOP_PURGE_MS = 1_700;
+const THEME_START = '#0b0f0c';
+const THEME_PLAY = '#084c8d';
+
+function useHopClock(running: boolean) {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    if (!running) return;
+    const id = window.setInterval(() => setNow(new Date()), 1000);
+    return () => window.clearInterval(id);
+  }, [running]);
+  return now;
+}
+
+function clearTimer(id: number) {
+  window.clearTimeout(id);
+}
 
 export function HomePage() {
+  const [startPurged, setStartPurged] = useState(false);
+  const hopClock = useHopClock(!startPurged);
+  const hopDate = hopClock.toLocaleDateString('en-US', {
+    month: '2-digit',
+    day: '2-digit',
+    year: 'numeric',
+  });
+  const hopTime = hopClock.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
   const location = useLocation();
   const onHome = location.pathname === '/';
   const homeSearchRef = useRef(location.search);
   if (onHome) homeSearchRef.current = location.search;
   const simKey = onHome ? location.search : homeSearchRef.current;
   const sim = useMemo(() => parseSimQuery(simKey), [simKey]);
-  const showDebug = debugMode(homeSearchRef.current);
+  const previewPack = new URLSearchParams(simKey).get('pack') === 'preview';
   const [pageVisible, setPageVisible] = useState(
     () => typeof document === 'undefined' || document.visibilityState === 'visible',
   );
@@ -61,8 +86,17 @@ export function HomePage() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [onboardGuesses, setOnboardGuesses] = useState<OnboardGuess[]>([]);
-  const [showTransitHint, setShowTransitHint] = useState(false);
   const [leavingRoute, setLeavingRoute] = useState<string | null>(null);
+  const [playOpen, setPlayOpen] = useState(false);
+  const [onboardOpen, setOnboardOpen] = useState(false);
+  const [scanId, setScanId] = useState(0);
+  const [recentCards, setRecentCards] = useState<{ key: string; card: CardDef }[]>([]);
+  const [hopValid, setHopValid] = useState(false);
+  const [validUntil, setValidUntil] = useState<string | null>(null);
+  const hopReaderRef = useRef<HTMLDivElement>(null);
+  const hopScreenRef = useRef<HTMLDivElement>(null);
+  const hopOpenTimer = useRef(0);
+  const hopPurgeTimer = useRef(0);
   const [pack, setPack] = useState<CardDef[] | null>(null);
   const [awaitingPack, setAwaitingPack] = useState(false);
   const [pendingConfirm, setPendingConfirm] = useState<{
@@ -80,16 +114,38 @@ export function HomePage() {
   const pendingRef = useRef(pendingConfirm);
   pendingRef.current = pendingConfirm;
 
+  const transitLive = polling && (onboardOpen || Boolean(pendingConfirm));
+  const hasFix = origin !== null;
+
+  useEffect(() => {
+    if (!playOpen) return;
+    void listRecentReceipts(5).then((receipts) => {
+      setRecentCards(
+        receipts.flatMap((receipt) => {
+          const card = cardById(receipt.cardId);
+          return card ? [{ key: receipt.id, card }] : [];
+        }),
+      );
+    });
+  }, [playOpen, pack]);
+
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) return;
+    meta.setAttribute('content', playOpen ? THEME_PLAY : THEME_START);
+  }, [playOpen]);
+
   useEffect(() => {
     setOnboardGuesses([]);
     setSamples([]);
-    setShowTransitHint(false);
     setLeavingRoute(null);
     setPendingConfirm(null);
     setVehicleMovedM(0);
     setPack(null);
     setAwaitingPack(false);
     setNotice(null);
+    setOnboardOpen(false);
+    setScanId(0);
     awardingRef.current = false;
     packTimers.current.forEach((t) => window.clearTimeout(t));
     packTimers.current = [];
@@ -102,7 +158,17 @@ export function HomePage() {
   }, [sim]);
 
   useEffect(() => {
-    return () => packTimers.current.forEach((t) => window.clearTimeout(t));
+    if (!previewPack) return;
+    if (!fanfareRef.current) fanfareRef.current = createFanfareContext();
+    setPack(allCards().slice(0, 3));
+  }, [previewPack]);
+
+  useEffect(() => {
+    return () => {
+      packTimers.current.forEach((t) => window.clearTimeout(t));
+      clearTimer(hopOpenTimer.current);
+      clearTimer(hopPurgeTimer.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -114,7 +180,7 @@ export function HomePage() {
   }, []);
 
   useEffect(() => {
-    if (!polling) return;
+    if (!transitLive) return;
     if (sim && sim.speedMps > 0) {
       const tick = window.setInterval(() => {
         if (!pendingRef.current) {
@@ -156,7 +222,7 @@ export function HomePage() {
     );
 
     return () => navigator.geolocation.clearWatch(watch);
-  }, [sim, polling]);
+  }, [sim, transitLive]);
 
   const originRef = useRef<GeoPoint | null>(origin);
   originRef.current = origin;
@@ -235,7 +301,7 @@ export function HomePage() {
       }
     }
 
-    if (!polling) return;
+    if (!transitLive) return;
 
     void loadVehicles();
     const id = window.setInterval(() => {
@@ -245,17 +311,7 @@ export function HomePage() {
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [sim, pendingConfirm, polling]);
-
-  useEffect(() => {
-    if (onboardGuesses.length > 0) {
-      setShowTransitHint(false);
-      return;
-    }
-    setShowTransitHint(false);
-    const t = window.setTimeout(() => setShowTransitHint(true), TRANSIT_HINT_MS);
-    return () => window.clearTimeout(t);
-  }, [onboardGuesses.length, sim]);
+  }, [sim, pendingConfirm, transitLive, scanId, hasFix]);
 
   async function confirmTrip(routeNumber: string, next: Omit<Ride, 'id' | 'checkedInAt'>) {
     if (pack || leavingRoute || awaitingPack) return;
@@ -271,14 +327,12 @@ export function HomePage() {
       }
       const cards = await completeCheckIn(ride);
       dismissedRoutes.current.add(routeNumber);
-      setLeavingRoute(routeNumber);
+      setOnboardGuesses([]);
+      setLeavingRoute(null);
+      setOnboardOpen(false);
       setAwaitingPack(true);
       packTimers.current.forEach((t) => window.clearTimeout(t));
       packTimers.current = [
-        window.setTimeout(() => {
-          setOnboardGuesses((prev) => prev.filter((g) => g.vehicle.routeNumber !== routeNumber));
-          setLeavingRoute(null);
-        }, LEAVE_MS),
         window.setTimeout(() => {
           setPack(cards);
           setAwaitingPack(false);
@@ -325,61 +379,82 @@ export function HomePage() {
     })();
   }
 
-  const searching = onboardGuesses.length === 0 && !awaitingPack && !pack && !pendingConfirm;
+  function primePlay() {
+    if (!fanfareRef.current) fanfareRef.current = createFanfareContext();
+    if (playOpen || hopValid) return;
+    const until = new Date(Date.now() + 2 * 60 * 60 * 1000);
+    setValidUntil(
+      until.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+    );
+    setHopValid(true);
+    clearTimer(hopOpenTimer.current);
+    hopOpenTimer.current = window.setTimeout(() => {
+      const reader = hopReaderRef.current;
+      const screen = hopScreenRef.current;
+      if (reader && screen) {
+        const readerBox = reader.getBoundingClientRect();
+        const screenBox = screen.getBoundingClientRect();
+        const targetH = readerBox.height * (7 / 8);
+        const targetTop = readerBox.top + (readerBox.height - targetH) / 2;
+        screen.style.setProperty('--hop-h', `${targetH}px`);
+        screen.style.setProperty('--hop-dy', `${targetTop - screenBox.top}px`);
+      }
+      setPlayOpen(true);
+      clearTimer(hopPurgeTimer.current);
+      hopPurgeTimer.current = window.setTimeout(() => {
+        setStartPurged(true);
+      }, HOP_PURGE_MS);
+    }, HOP_VALID_HOLD_MS);
+  }
 
   return (
-    <section className="page">
+    <section className={`page page-home${playOpen ? ' play-session' : ''}`}>
       {notice ? <p className="banner">{notice}</p> : null}
 
-      {searching ? (
-        <div className="search-status">
-          <div className="search-radar" aria-hidden="true">
-            <span className="radar-ring" />
-            <span className="radar-ring" />
-            <span className="radar-ring" />
-            <span className="radar-core" />
-          </div>
-          <p>Looking for the line you're on…</p>
-          {showTransitHint ? (
-            <p className="muted">You must be on a moving bus, MAX, or streetcar to get cards.</p>
-          ) : null}
+      {playOpen ? (
+        <div className="play-field">
+          {onboardOpen ? (
+            <LinePicker
+              guesses={onboardGuesses}
+              leavingKey={leavingRoute}
+              locked={busy || awaitingPack || Boolean(pendingConfirm)}
+              onPick={confirmOnboard}
+              onDone={() => setOnboardOpen(false)}
+            />
+          ) : (
+            <RideHub
+              cards={recentCards}
+              onBoard={() => {
+                if (awaitingPack || pack || pendingConfirm) return;
+                if (!fanfareRef.current) fanfareRef.current = createFanfareContext();
+                setOnboardGuesses([]);
+                setScanId((n) => n + 1);
+                setOnboardOpen(true);
+              }}
+            />
+          )}
         </div>
-      ) : onboardGuesses.length > 0 ? (
-        <>
-          <h2 className="page-title">Which line?</h2>
-          <ChoiceList
-            items={onboardGuesses}
-            emptyText=""
-            itemKey={(g) => g.vehicle.routeNumber}
-            onPick={confirmOnboard}
-            leavingKey={leavingRoute}
-            locked={busy || awaitingPack || Boolean(pendingConfirm)}
-          >
-            {(g) => (
-              <>
-                <span className={routeBadgeClass(g.vehicle.mode, g.vehicle.routeNumber, g.vehicle.routeName)}>
-                  {riderRouteLabel(g.vehicle.mode, g.vehicle.routeNumber)}
-                </span>
-                <span className="vehicle-meta">
-                  <strong>{g.vehicle.routeName}</strong>
-                  <span>
-                    {formatHeadsign(g.vehicle.signMessage, g.vehicle.routeName) ||
-                      modeLabel(g.vehicle.mode)}
-                  </span>
-                </span>
-                <span className="vehicle-extra">{formatDistance(g.distanceMeters)}</span>
-              </>
-            )}
-          </ChoiceList>
-        </>
       ) : null}
+
+      {startPurged ? null : (
+        <StartMenu
+          readerRef={hopReaderRef}
+          screenRef={hopScreenRef}
+          valid={hopValid}
+          open={playOpen}
+          validUntil={validUntil}
+          date={hopDate}
+          time={hopTime}
+          onPlay={primePlay}
+        />
+      )}
 
       {pendingConfirm ? (
         <div className="confirm-overlay">
           <div className="confirm">
             <p>
               Stay on the {riderRouteLabel(pendingConfirm.draft.mode, pendingConfirm.routeNumber)} to
-              receive cards
+              get a pack!
             </p>
             <progress
               className="ride-progress"
@@ -405,52 +480,6 @@ export function HomePage() {
         </div>
       ) : null}
 
-      {showDebug ? (
-        <div className="debug-panel">
-          <h2>Debug</h2>
-          <div className="debug-links">
-            <Link className="secondary" to="/?sim=ride-ok">
-              125 m pass
-            </Link>
-            <Link className="secondary" to="/?sim=ride-miss">
-              125 m fail
-            </Link>
-            <Link className="ghost" to="/?sim=max-all">
-              All MAX
-            </Link>
-            <Link className="ghost" to="/?sim=downtown">
-              Pioneer
-            </Link>
-            <Link className="ghost" to="/">
-              Clear
-            </Link>
-            <button
-              type="button"
-              className="ghost"
-              onClick={() => {
-                if (!fanfareRef.current) fanfareRef.current = createFanfareContext();
-                setPack(allCards().slice(0, 3));
-              }}
-            >
-              Preview pack
-            </button>
-            <button
-              type="button"
-              className="ghost"
-              onClick={() => {
-                void (async () => {
-                  if (!window.confirm('Reset album, log, and cooldowns?')) return;
-                  await resetApp();
-                  window.location.reload();
-                })();
-              }}
-            >
-              Reset
-            </button>
-          </div>
-        </div>
-      ) : null}
-
       {pack ? (
         <PackReveal
           cards={pack}
@@ -458,6 +487,7 @@ export function HomePage() {
           onDone={() => {
             setPack(null);
             setAwaitingPack(false);
+            setOnboardOpen(false);
           }}
         />
       ) : null}
