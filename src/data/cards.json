@@ -1,0 +1,331 @@
+[
+  {
+    "id": "line-20",
+    "name": "Burnside 20",
+    "rarity": "common",
+    "type": "route",
+    "flavor": "East-west workhorse. Somebody always pulls the cord one stop too late.",
+    "color": "#c45c26",
+    "art": "🚌",
+    "unlockBias": "bus"
+  },
+  {
+    "id": "line-12",
+    "name": "Barbur 12",
+    "rarity": "common",
+    "type": "route",
+    "flavor": "Hills, rain, and a view of downtown if the windows are not fogged.",
+    "color": "#2f6f4e",
+    "art": "🚌",
+    "unlockBias": "bus"
+  },
+  {
+    "id": "line-15",
+    "name": "Belmont 15",
+    "rarity": "common",
+    "type": "route",
+    "flavor": "Coffee cups, strollers, and a sudden stop for a fox on Division.",
+    "color": "#3d5a80",
+    "art": "☕",
+    "unlockBias": "bus"
+  },
+  {
+    "id": "line-6",
+    "name": "Martin Luther King 6",
+    "rarity": "common",
+    "type": "route",
+    "flavor": "Northbound through a corridor of murals and MAX shadows.",
+    "color": "#6b4f71",
+    "art": "🚌",
+    "unlockBias": "bus"
+  },
+  {
+    "id": "line-4",
+    "name": "Fessenden 4",
+    "rarity": "common",
+    "type": "route",
+    "flavor": "St. Johns steel and the longest way around the river.",
+    "color": "#8c5a2b",
+    "art": "🌉",
+    "unlockBias": "bus"
+  },
+  {
+    "id": "fx2",
+    "name": "FX2 Division",
+    "rarity": "uncommon",
+    "type": "route",
+    "flavor": "All-door boarding energy. The bus that thinks it is a train.",
+    "color": "#e07a3d",
+    "art": "🚌",
+    "unlockBias": "bus"
+  },
+  {
+    "id": "bus-gillig",
+    "name": "Gillig Low Floor",
+    "rarity": "common",
+    "type": "vehicle",
+    "flavor": "Kneel, ramp, beep. The everyday champion of curb cuts.",
+    "color": "#4a6fa5",
+    "art": "🚌",
+    "unlockBias": "bus"
+  },
+  {
+    "id": "bus-articul",
+    "name": "Accordion",
+    "rarity": "uncommon",
+    "type": "vehicle",
+    "flavor": "The middle joint is a portal. Do not stand on the spinning plate.",
+    "color": "#2c3e50",
+    "art": "🚌",
+    "unlockBias": "bus"
+  },
+  {
+    "id": "operator-wave",
+    "name": "Operator Wave",
+    "rarity": "uncommon",
+    "type": "operator",
+    "flavor": "Two-finger salute at a layover. You are seen.",
+    "color": "#1b6b4a",
+    "art": "👋"
+  },
+  {
+    "id": "hold-please",
+    "name": "Please Hold On",
+    "rarity": "common",
+    "type": "operator",
+    "flavor": "The chime, then the lurch. Physics is undefeated.",
+    "color": "#7a3b2e",
+    "art": "✋"
+  },
+  {
+    "id": "max-blue",
+    "name": "Blue Line Spine",
+    "rarity": "uncommon",
+    "type": "route",
+    "flavor": "Hillsboro to Gresham. The original long commute.",
+    "color": "#1d4ed8",
+    "art": "🚈",
+    "unlockBias": "max"
+  },
+  {
+    "id": "max-red",
+    "name": "Red Line Runway",
+    "rarity": "uncommon",
+    "type": "route",
+    "flavor": "Airport carpet energy, but on rails.",
+    "color": "#b91c1c",
+    "art": "✈️",
+    "unlockBias": "max"
+  },
+  {
+    "id": "max-yellow",
+    "name": "Yellow Line North",
+    "rarity": "uncommon",
+    "type": "route",
+    "flavor": "Interstate Avenue in a straight shot. Expo vibes.",
+    "color": "#ca8a04",
+    "art": "🚈",
+    "unlockBias": "max"
+  },
+  {
+    "id": "max-green",
+    "name": "Green Line Clackamas",
+    "rarity": "uncommon",
+    "type": "route",
+    "flavor": "Mall, college, and a turnback that always feels sudden.",
+    "color": "#15803d",
+    "art": "🚈",
+    "unlockBias": "max"
+  },
+  {
+    "id": "max-orange",
+    "name": "Orange Line Bridge",
+    "rarity": "rare",
+    "type": "route",
+    "flavor": "Tilikum lights, bike path below, river wind in the doors.",
+    "color": "#ea580c",
+    "art": "🌉",
+    "unlockBias": "max"
+  },
+  {
+    "id": "type-1",
+    "name": "Type 1 Pioneer",
+    "rarity": "rare",
+    "type": "vehicle",
+    "flavor": "High floors and history. The original MAX look.",
+    "color": "#334155",
+    "art": "🚃",
+    "unlockBias": "max"
+  },
+  {
+    "id": "type-5",
+    "name": "Type 5 Low Floor",
+    "rarity": "common",
+    "type": "vehicle",
+    "flavor": "The train you actually ride. Yellow stripe optional in memory.",
+    "color": "#1e3a5f",
+    "art": "🚈",
+    "unlockBias": "max"
+  },
+  {
+    "id": "pioneer-square",
+    "name": "Pioneer Courthouse Square",
+    "rarity": "common",
+    "type": "station",
+    "flavor": "Brick living room. Transfers, chess, and a fountain in summer.",
+    "color": "#9a3412",
+    "art": "⛲"
+  },
+  {
+    "id": "rose-quarter",
+    "name": "Rose Quarter",
+    "rarity": "common",
+    "type": "station",
+    "flavor": "Concert spillover and a MAX weave through the ramps.",
+    "color": "#be123c",
+    "art": "🌹",
+    "unlockBias": "max"
+  },
+  {
+    "id": "gateway-tc",
+    "name": "Gateway Transit Center",
+    "rarity": "common",
+    "type": "station",
+    "flavor": "Where lines braid. Bring a jacket; the wind knows this place.",
+    "color": "#475569",
+    "art": "🚉"
+  },
+  {
+    "id": "hollywood-tc",
+    "name": "Hollywood Transit Center",
+    "rarity": "uncommon",
+    "type": "station",
+    "flavor": "Rebuild scars and a hill that still surprises visitors.",
+    "color": "#7c3aed",
+    "art": "🎬"
+  },
+  {
+    "id": "union-station",
+    "name": "Union Station",
+    "rarity": "uncommon",
+    "type": "station",
+    "flavor": "Go by train. The clock still means it.",
+    "color": "#0f766e",
+    "art": "🕰️"
+  },
+  {
+    "id": "ohsu-tram",
+    "name": "Aerial Tram Shadow",
+    "rarity": "rare",
+    "type": "station",
+    "flavor": "Not TriMet, but every rider looks up anyway.",
+    "color": "#0369a1",
+    "art": "🚡"
+  },
+  {
+    "id": "wes-diesel",
+    "name": "WES Commuter",
+    "rarity": "rare",
+    "type": "route",
+    "flavor": "Weekday-only folklore. If you catch it, you brag.",
+    "color": "#4b5563",
+    "art": "🚆",
+    "unlockBias": "wes"
+  },
+  {
+    "id": "wes-car",
+    "name": "Diesel Multiple Unit",
+    "rarity": "legendary",
+    "type": "vehicle",
+    "flavor": "A train that sounds like a bus until it does not.",
+    "color": "#111827",
+    "art": "🚂",
+    "unlockBias": "wes"
+  },
+  {
+    "id": "streetcar-ns",
+    "name": "NS Line Loop",
+    "rarity": "uncommon",
+    "type": "route",
+    "flavor": "Pearl to South Waterfront. Tourists and grocery bags.",
+    "color": "#db2777",
+    "art": "🚋",
+    "unlockBias": "streetcar"
+  },
+  {
+    "id": "hop-fastpass",
+    "name": "Hop Echo",
+    "rarity": "common",
+    "type": "operator",
+    "flavor": "Tap remembered. The beep is a tiny win.",
+    "color": "#16a34a",
+    "art": "🎫"
+  },
+  {
+    "id": "rain-day",
+    "name": "November Window",
+    "rarity": "common",
+    "type": "operator",
+    "flavor": "Condensation art. You draw a route map with a sleeve.",
+    "color": "#64748b",
+    "art": "🌧️"
+  },
+  {
+    "id": "bridge-steel",
+    "name": "Steel Bridge Lift",
+    "rarity": "rare",
+    "type": "station",
+    "flavor": "The whole network holds its breath for a barge.",
+    "color": "#78716c",
+    "art": "🌉",
+    "unlockBias": "max"
+  },
+  {
+    "id": "night-owl",
+    "name": "Last Bus",
+    "rarity": "rare",
+    "type": "route",
+    "flavor": "The 2 a.m. fluorescent quiet. You and the operator and the river.",
+    "color": "#1e1b4b",
+    "art": "🦉",
+    "unlockBias": "bus"
+  },
+  {
+    "id": "fare-inspector",
+    "name": "Proof of Payment",
+    "rarity": "uncommon",
+    "type": "operator",
+    "flavor": "A polite scan. Your collection is the real ticket.",
+    "color": "#92400e",
+    "art": "🪪"
+  },
+  {
+    "id": "bike-hook",
+    "name": "Front Rack",
+    "rarity": "common",
+    "type": "vehicle",
+    "flavor": "Two bikes, one prayer, a hill start.",
+    "color": "#365314",
+    "art": "🚲",
+    "unlockBias": "bus"
+  },
+  {
+    "id": "legendary-rose",
+    "name": "City of Roses",
+    "rarity": "legendary",
+    "type": "operator",
+    "flavor": "Every ride is a stamp. The album is the map.",
+    "color": "#9f1239",
+    "art": "🌹"
+  },
+  {
+    "id": "legendary-max",
+    "name": "Steel Whisper",
+    "rarity": "legendary",
+    "type": "vehicle",
+    "flavor": "When the train takes the curve and the city lights smear.",
+    "color": "#1e3a8a",
+    "art": "✨",
+    "unlockBias": "max"
+  }
+]
