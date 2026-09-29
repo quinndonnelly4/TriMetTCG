@@ -1,5 +1,6 @@
-import { recordTrimetQuery } from './trimetQueries';
+import type { CardDef, GeoPoint, TransitMode, Vehicle } from '../types';
 import { haversineMeters } from './geo';
+import { recordTrimetQuery } from './trimetQueries';
 
 interface TrimetVehicleRaw {
   vehicleID?: number | string;
