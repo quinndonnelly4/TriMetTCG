@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import { createStreetcarMiddleware } from './server/streetcar-proxy';
 import { createTrimetMiddleware, trimetAppId } from './server/trimet-proxy';
 
 export default defineConfig(({ mode }) => {
@@ -14,9 +15,11 @@ export default defineConfig(({ mode }) => {
         name: 'trimet-key-proxy',
         configureServer(server) {
           server.middlewares.use(createTrimetMiddleware(appId));
+          server.middlewares.use(createStreetcarMiddleware());
         },
         configurePreviewServer(server) {
           server.middlewares.use(createTrimetMiddleware(appId));
+          server.middlewares.use(createStreetcarMiddleware());
         },
       },
       VitePWA({
@@ -27,6 +30,10 @@ export default defineConfig(({ mode }) => {
           runtimeCaching: [
             {
               urlPattern: /\/api\/trimet(?:\/|$)/,
+              handler: 'NetworkOnly',
+            },
+            {
+              urlPattern: /\/api\/streetcar(?:\/|$)/,
               handler: 'NetworkOnly',
             },
           ],

@@ -13,17 +13,32 @@ export function DebugPanel() {
       <h2>Debug</h2>
       <p className="debug-stat">TriMet queries this tab: {trimetQueryCount()}</p>
       <div className="debug-links">
-        <Link className="secondary" to="/?sim=ride-ok">
-          125 m pass
+        <Link className="secondary" to="/?hud=1">
+          Live check-in HUD
         </Link>
-        <Link className="secondary" to="/?sim=ride-miss">
-          125 m fail
+        <Link className="secondary" to="/?sim=checkin">
+          Check-in HUD pass
+        </Link>
+        <Link className="secondary" to="/?sim=checkin-miss">
+          Check-in HUD stay put
+        </Link>
+        <Link className="secondary" to="/?sim=checkin-streetcar">
+          Check-in HUD streetcar
+        </Link>
+        <Link className="ghost" to="/?sim=ride-ok">
+          80 m pass
+        </Link>
+        <Link className="ghost" to="/?sim=ride-miss">
+          80 m stay put
         </Link>
         <Link className="ghost" to="/?sim=max-all">
           All MAX
         </Link>
         <Link className="ghost" to="/?sim=downtown">
           Pioneer
+        </Link>
+        <Link className="ghost" to="/?sim=ns-23rd">
+          NW 23rd
         </Link>
         <Link className="ghost" to="/">
           Clear

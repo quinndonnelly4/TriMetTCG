@@ -7,6 +7,7 @@
     "flavor": "East-west workhorse. Somebody always pulls the cord one stop too late.",
     "color": "#c45c26",
     "art": "🚌",
+    "image": "/art/line-20.webp",
     "unlockBias": "bus"
   },
   {
@@ -17,6 +18,7 @@
     "flavor": "Hills, rain, and a view of downtown if the windows are not fogged.",
     "color": "#2f6f4e",
     "art": "🚌",
+    "image": "/art/line-12.webp",
     "unlockBias": "bus"
   },
   {
@@ -27,6 +29,7 @@
     "flavor": "Coffee cups, strollers, and a sudden stop for a fox on Division.",
     "color": "#3d5a80",
     "art": "☕",
+    "image": "/art/line-15.webp",
     "unlockBias": "bus"
   },
   {
@@ -37,6 +40,7 @@
     "flavor": "Northbound through a corridor of murals and MAX shadows.",
     "color": "#6b4f71",
     "art": "🚌",
+    "image": "/art/line-6.webp",
     "unlockBias": "bus"
   },
   {
@@ -47,6 +51,7 @@
     "flavor": "St. Johns steel and the longest way around the river.",
     "color": "#8c5a2b",
     "art": "🌉",
+    "image": "/art/line-4.webp",
     "unlockBias": "bus"
   },
   {
@@ -57,6 +62,7 @@
     "flavor": "All-door boarding energy. The bus that thinks it is a train.",
     "color": "#e07a3d",
     "art": "🚌",
+    "image": "/art/fx2.webp",
     "unlockBias": "bus"
   },
   {
@@ -67,6 +73,7 @@
     "flavor": "Kneel, ramp, beep. The everyday champion of curb cuts.",
     "color": "#4a6fa5",
     "art": "🚌",
+    "image": "/art/bus-gillig.webp",
     "unlockBias": "bus"
   },
   {
@@ -77,6 +84,7 @@
     "flavor": "The middle joint is a portal. Do not stand on the spinning plate.",
     "color": "#2c3e50",
     "art": "🚌",
+    "image": "/art/bus-articul.webp",
     "unlockBias": "bus"
   },
   {
@@ -86,7 +94,8 @@
     "type": "operator",
     "flavor": "Two-finger salute at a layover. You are seen.",
     "color": "#1b6b4a",
-    "art": "👋"
+    "art": "👋",
+    "image": "/art/operator-wave.webp"
   },
   {
     "id": "hold-please",
@@ -95,7 +104,8 @@
     "type": "operator",
     "flavor": "The chime, then the lurch. Physics is undefeated.",
     "color": "#7a3b2e",
-    "art": "✋"
+    "art": "✋",
+    "image": "/art/hold-please.webp"
   },
   {
     "id": "max-blue",
@@ -105,6 +115,7 @@
     "flavor": "Hillsboro to Gresham. The original long commute.",
     "color": "#1d4ed8",
     "art": "🚈",
+    "image": "/art/max-blue.webp",
     "unlockBias": "max"
   },
   {
@@ -115,6 +126,7 @@
     "flavor": "Airport carpet energy, but on rails.",
     "color": "#b91c1c",
     "art": "✈️",
+    "image": "/art/max-red.webp",
     "unlockBias": "max"
   },
   {
@@ -125,6 +137,7 @@
     "flavor": "Interstate Avenue in a straight shot. Expo vibes.",
     "color": "#ca8a04",
     "art": "🚈",
+    "image": "/art/max-yellow.webp",
     "unlockBias": "max"
   },
   {
@@ -135,6 +148,7 @@
     "flavor": "Mall, college, and a turnback that always feels sudden.",
     "color": "#15803d",
     "art": "🚈",
+    "image": "/art/max-green.webp",
     "unlockBias": "max"
   },
   {
@@ -145,6 +159,7 @@
     "flavor": "Tilikum lights, bike path below, river wind in the doors.",
     "color": "#ea580c",
     "art": "🌉",
+    "image": "/art/max-orange.webp",
     "unlockBias": "max"
   },
   {
@@ -155,6 +170,7 @@
     "flavor": "High floors and history. The original MAX look.",
     "color": "#334155",
     "art": "🚃",
+    "image": "/art/type-1.webp",
     "unlockBias": "max"
   },
   {
@@ -165,6 +181,7 @@
     "flavor": "The train you actually ride. Yellow stripe optional in memory.",
     "color": "#1e3a5f",
     "art": "🚈",
+    "image": "/art/type-5.webp",
     "unlockBias": "max"
   },
   {
@@ -174,7 +191,8 @@
     "type": "station",
     "flavor": "Brick living room. Transfers, chess, and a fountain in summer.",
     "color": "#9a3412",
-    "art": "⛲"
+    "art": "⛲",
+    "image": "/art/pioneer-square.webp"
   },
   {
     "id": "rose-quarter",
@@ -184,6 +202,7 @@
     "flavor": "Concert spillover and a MAX weave through the ramps.",
     "color": "#be123c",
     "art": "🌹",
+    "image": "/art/rose-quarter.webp",
     "unlockBias": "max"
   },
   {
@@ -193,7 +212,8 @@
     "type": "station",
     "flavor": "Where lines braid. Bring a jacket; the wind knows this place.",
     "color": "#475569",
-    "art": "🚉"
+    "art": "🚉",
+    "image": "/art/gateway-tc.webp"
   },
   {
     "id": "hollywood-tc",
@@ -202,7 +222,8 @@
     "type": "station",
     "flavor": "Rebuild scars and a hill that still surprises visitors.",
     "color": "#7c3aed",
-    "art": "🎬"
+    "art": "🎬",
+    "image": "/art/hollywood-tc.webp"
   },
   {
     "id": "union-station",
@@ -211,7 +232,8 @@
     "type": "station",
     "flavor": "Go by train. The clock still means it.",
     "color": "#0f766e",
-    "art": "🕰️"
+    "art": "🕰️",
+    "image": "/art/union-station.webp"
   },
   {
     "id": "ohsu-tram",
@@ -220,7 +242,8 @@
     "type": "station",
     "flavor": "Not TriMet, but every rider looks up anyway.",
     "color": "#0369a1",
-    "art": "🚡"
+    "art": "🚡",
+    "image": "/art/ohsu-tram.webp"
   },
   {
     "id": "wes-diesel",
@@ -230,16 +253,18 @@
     "flavor": "Weekday-only folklore. If you catch it, you brag.",
     "color": "#4b5563",
     "art": "🚆",
+    "image": "/art/wes-diesel.webp",
     "unlockBias": "wes"
   },
   {
     "id": "wes-car",
-    "name": "Diesel Multiple Unit",
+    "name": "WES",
     "rarity": "legendary",
     "type": "vehicle",
     "flavor": "A train that sounds like a bus until it does not.",
     "color": "#111827",
     "art": "🚂",
+    "image": "/art/wes-car.webp",
     "unlockBias": "wes"
   },
   {
@@ -250,6 +275,7 @@
     "flavor": "Pearl to South Waterfront. Tourists and grocery bags.",
     "color": "#db2777",
     "art": "🚋",
+    "image": "/art/streetcar-ns.webp",
     "unlockBias": "streetcar"
   },
   {
@@ -259,7 +285,8 @@
     "type": "operator",
     "flavor": "Tap remembered. The beep is a tiny win.",
     "color": "#16a34a",
-    "art": "🎫"
+    "art": "🎫",
+    "image": "/art/hop-fastpass.webp"
   },
   {
     "id": "rain-day",
@@ -268,7 +295,8 @@
     "type": "operator",
     "flavor": "Condensation art. You draw a route map with a sleeve.",
     "color": "#64748b",
-    "art": "🌧️"
+    "art": "🌧️",
+    "image": "/art/rain-day.webp"
   },
   {
     "id": "bridge-steel",
@@ -278,6 +306,7 @@
     "flavor": "The whole network holds its breath for a barge.",
     "color": "#78716c",
     "art": "🌉",
+    "image": "/art/bridge-steel.webp",
     "unlockBias": "max"
   },
   {
@@ -288,6 +317,7 @@
     "flavor": "The 2 a.m. fluorescent quiet. You and the operator and the river.",
     "color": "#1e1b4b",
     "art": "🦉",
+    "image": "/art/night-owl.webp",
     "unlockBias": "bus"
   },
   {
@@ -297,7 +327,8 @@
     "type": "operator",
     "flavor": "A polite scan. Your collection is the real ticket.",
     "color": "#92400e",
-    "art": "🪪"
+    "art": "🪪",
+    "image": "/art/fare-inspector.webp"
   },
   {
     "id": "bike-hook",
@@ -307,6 +338,7 @@
     "flavor": "Two bikes, one prayer, a hill start.",
     "color": "#365314",
     "art": "🚲",
+    "image": "/art/bike-hook.webp",
     "unlockBias": "bus"
   },
   {
@@ -316,7 +348,8 @@
     "type": "operator",
     "flavor": "Every ride is a stamp. The album is the map.",
     "color": "#9f1239",
-    "art": "🌹"
+    "art": "🌹",
+    "image": "/art/legendary-rose.webp"
   },
   {
     "id": "legendary-max",
@@ -326,6 +359,7 @@
     "flavor": "When the train takes the curve and the city lights smear.",
     "color": "#1e3a8a",
     "art": "✨",
+    "image": "/art/legendary-max.webp",
     "unlockBias": "max"
   }
 ]

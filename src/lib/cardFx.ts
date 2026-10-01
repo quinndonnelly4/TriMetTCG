@@ -2,15 +2,16 @@ import type { CSSProperties } from 'react';
 
 /** Catch-up per frame. Lower = more lag behind the finger. */
 export const CARD_FOLLOW = {
-  near: 0.038,
-  far: 0.24,
-  range: 300,
+  near: 0.14,
+  far: 0.52,
+  range: 220,
 };
 
 export const CARD_TILT = {
-  max: 10,
+  max: 12,
   range: 150,
-  yawMax: 11,
+  yawMax: 24,
+  pitchMax: 24,
 };
 
 export type CardLight = {
@@ -103,7 +104,7 @@ export function cardTilt(moveX: number, moveY: number, cfg = CARD_TILT) {
   const tipY = Math.max(-1, Math.min(1, moveY / cfg.range));
   return {
     rotateZ: tipX * cfg.max,
-    rotateX: tipY * cfg.max,
+    rotateX: -tipY * cfg.pitchMax,
     rotateY: tipX * cfg.yawMax,
   };
 }

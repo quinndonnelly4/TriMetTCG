@@ -28,50 +28,33 @@ export function AppShell({ children }: { children: ReactNode }) {
     x: 0,
     y: 0,
     scrollTop: 0,
-    scrollLeft: 0,
-    t: 0,
-    vx: 0,
     tracking: false,
-    axis: null as null | 'x' | 'y',
     ignore: false,
-    scroller: null as HTMLElement | null,
+    panned: false,
   });
   const swallowClick = useRef(false);
-  const coast = useRef(0);
-
-  function stopCoast() {
-    if (coast.current) cancelAnimationFrame(coast.current);
-    coast.current = 0;
-  }
 
   function onPointerDown(event: PointerEvent<HTMLElement>) {
-    stopCoast();
     if (skipPan(event.target) || event.pointerType !== 'mouse') {
       pan.current.ignore = true;
       return;
     }
-    const scroller = (event.target as HTMLElement).closest('.album-scroller') as HTMLElement | null;
     pan.current = {
       x: event.clientX,
       y: event.clientY,
       scrollTop: mainRef.current?.scrollTop ?? 0,
-      scrollLeft: scroller?.scrollLeft ?? 0,
-      t: performance.now(),
-      vx: 0,
       tracking: true,
-      axis: null,
       ignore: false,
-      scroller,
+      panned: false,
     };
   }
 
   function onPointerMove(event: PointerEvent<HTMLElement>) {
     if (!pan.current.tracking || pan.current.ignore || !mainRef.current) return;
-    const dx = event.clientX - pan.current.x;
     const dy = event.clientY - pan.current.y;
-    if (!pan.current.axis) {
-      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
-      pan.current.axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+    if (!pan.current.panned) {
+      if (Math.abs(event.clientX - pan.current.x) < 8 && Math.abs(dy) < 8) return;
+      pan.current.panned = true;
       event.preventDefault();
       try {
         event.currentTarget.setPointerCapture(event.pointerId);
@@ -79,39 +62,14 @@ export function AppShell({ children }: { children: ReactNode }) {
         /* optional */
       }
     }
-    if (pan.current.axis === 'y') {
-      mainRef.current.scrollTop = pan.current.scrollTop - dy;
-      return;
-    }
-    if (pan.current.scroller) {
-      const now = performance.now();
-      const dt = Math.max(now - pan.current.t, 8);
-      pan.current.vx = (pan.current.scrollLeft - dx - pan.current.scroller.scrollLeft) / dt;
-      pan.current.t = now;
-      pan.current.scroller.scrollLeft = pan.current.scrollLeft - dx;
-    }
+    mainRef.current.scrollTop = pan.current.scrollTop - dy;
   }
 
   function onPointerUp() {
-    if (pan.current.axis) swallowClick.current = true;
-    if (pan.current.axis === 'x' && pan.current.scroller) {
-      const scroller = pan.current.scroller;
-      let v = pan.current.vx * 16;
-      const step = () => {
-        v *= 0.93;
-        scroller.scrollLeft += v;
-        if (Math.abs(v) > 0.45) {
-          coast.current = requestAnimationFrame(step);
-          return;
-        }
-        coast.current = 0;
-      };
-      coast.current = requestAnimationFrame(step);
-    }
+    if (pan.current.panned) swallowClick.current = true;
     pan.current.tracking = false;
     pan.current.ignore = false;
-    pan.current.axis = null;
-    pan.current.scroller = null;
+    pan.current.panned = false;
   }
 
   function onClickCapture(event: MouseEvent<HTMLElement>) {

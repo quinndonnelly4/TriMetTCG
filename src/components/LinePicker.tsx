@@ -5,13 +5,11 @@ import type { OnboardGuess } from '../types';
 
 export function LinePicker({
   guesses,
-  leavingKey,
   locked,
   onPick,
   onDone,
 }: {
   guesses: OnboardGuess[];
-  leavingKey?: string | null;
   locked?: boolean;
   onPick: (guess: OnboardGuess) => void;
   onDone: () => void;
@@ -32,7 +30,6 @@ export function LinePicker({
           emptyText=""
           itemKey={(g) => g.vehicle.routeNumber}
           onPick={onPick}
-          leavingKey={leavingKey}
           locked={locked}
         >
           {(g) => (

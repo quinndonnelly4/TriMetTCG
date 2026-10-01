@@ -1,11 +1,13 @@
-import type { GeoPoint, GpsSample } from '../types';
+import type { GeoPoint } from '../types';
 
 const EARTH_M = 6371000;
 
 export const DOWNTOWN_PDX: GeoPoint = { lat: 45.5187, lng: -122.6784 };
+/** NS Line northern terminus, NW 23rd Ave & NW Marshall St. */
+export const NW_23RD_MARSHALL: GeoPoint = { lat: 45.53051, lng: -122.69864 };
 export const ONBOARD_RADIUS_M = 80;
-export const RIDE_CONFIRM_RADIUS_M = 50;
-export const RIDE_CONFIRM_MOVE_M = 125;
+export const RIDE_CONFIRM_RADIUS_M = 40;
+export const RIDE_CONFIRM_MOVE_M = 80;
 export const COOLDOWN_MS = 60 * 60 * 1000;
 
 /** Simplified downtown MAX spine used by ride-confirm debug sims */
@@ -39,12 +41,6 @@ export function formatDistance(meters: number): string {
   return `${(meters / 1000).toFixed(1)} km`;
 }
 
-export function speedMps(a: GpsSample, b: GpsSample): number {
-  const dt = (b.at - a.at) / 1000;
-  if (dt <= 0) return 0;
-  return haversineMeters(a, b) / dt;
-}
-
 export function pathLengthMeters(path: GeoPoint[]): number {
   let sum = 0;
   for (let i = 1; i < path.length; i++) sum += haversineMeters(path[i - 1], path[i]);
@@ -70,7 +66,15 @@ export function pointAlongPath(path: GeoPoint[], distanceM: number, loop = true)
   return path[path.length - 1];
 }
 
-export type SimKind = 'downtown' | 'ride-ok' | 'ride-miss' | 'max-all';
+export type SimKind =
+  | 'downtown'
+  | 'ride-ok'
+  | 'ride-miss'
+  | 'max-all'
+  | 'checkin'
+  | 'checkin-miss'
+  | 'checkin-streetcar'
+  | 'ns-23rd';
 
 export interface SimConfig {
   kind: SimKind;
@@ -81,6 +85,7 @@ export interface SimConfig {
   speedMps: number;
   loop: boolean;
   gpsFollowsVehicle: boolean;
+  autoConfirm?: boolean;
 }
 
 const RIDE_CONFIRM_SIM_MPS = 12;
@@ -100,28 +105,55 @@ export function parseSimQuery(search: string): SimConfig | null {
       gpsFollowsVehicle: false,
     };
   }
-  if (sim === 'ride-ok') {
+  if (sim === 'ns-23rd') {
     return {
-      kind: 'ride-ok',
+      kind: 'ns-23rd',
+      path: [NW_23RD_MARSHALL],
+      routes: [],
+      label: 'Still at NW 23rd & Marshall',
+      start: NW_23RD_MARSHALL,
+      speedMps: 0,
+      loop: false,
+      gpsFollowsVehicle: false,
+    };
+  }
+  if (sim === 'ride-ok' || sim === 'checkin') {
+    return {
+      kind: sim,
       path: SIM_MAX_PATH,
       routes: ['90'],
-      label: 'Ride 125 m pass',
+      label: sim === 'checkin' ? 'Check-in HUD pass' : 'Ride 80 m pass',
       start: SIM_MAX_PATH[0],
       speedMps: RIDE_CONFIRM_SIM_MPS,
       loop: false,
       gpsFollowsVehicle: true,
+      autoConfirm: sim === 'checkin',
     };
   }
-  if (sim === 'ride-miss') {
+  if (sim === 'ride-miss' || sim === 'checkin-miss') {
     return {
-      kind: 'ride-miss',
+      kind: sim,
       path: SIM_MAX_PATH,
       routes: ['20'],
-      label: 'Ride 125 m fail',
+      label: sim === 'checkin-miss' ? 'Check-in HUD stay put' : 'Ride 80 m stay put',
       start: SIM_MAX_PATH[0],
       speedMps: RIDE_CONFIRM_SIM_MPS,
       loop: false,
       gpsFollowsVehicle: false,
+      autoConfirm: sim === 'checkin-miss',
+    };
+  }
+  if (sim === 'checkin-streetcar') {
+    return {
+      kind: 'checkin-streetcar',
+      path: SIM_MAX_PATH,
+      routes: ['193'],
+      label: 'Check-in HUD streetcar',
+      start: SIM_MAX_PATH[0],
+      speedMps: RIDE_CONFIRM_SIM_MPS,
+      loop: false,
+      gpsFollowsVehicle: true,
+      autoConfirm: true,
     };
   }
   if (sim === 'max-all') {

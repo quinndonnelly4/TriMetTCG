@@ -1,5 +1,6 @@
 import type { CardDef, GeoPoint, TransitMode, Vehicle } from '../types';
 import { haversineMeters } from './geo';
+import { fetchStreetcarVehicles, STREETCAR_NAME, STREETCAR_RIDER } from './streetcar';
 import { recordTrimetQuery } from './trimetQueries';
 
 interface TrimetVehicleRaw {
@@ -72,7 +73,7 @@ export function routeDisplayName(
   if (fromSign) return titleMaxColor(fromSign);
   if (MAX_ROUTES[routeNumber]) return MAX_ROUTES[routeNumber];
   if (mode === 'wes') return 'WES';
-  if (mode === 'streetcar') return apiDesc || `Streetcar ${routeNumber}`;
+  if (mode === 'streetcar') return STREETCAR_NAME[routeNumber] || apiDesc || `Streetcar ${routeNumber}`;
   if (apiDesc) return apiDesc.replace(/^\d+\s*-\s*/, 'Line ').replace(/^Line Line /, 'Line ');
   return `Line ${routeNumber}`;
 }
@@ -87,6 +88,7 @@ export function modeLabel(mode: TransitMode): string {
 /** Rider-facing line id. MAX numbers stay internal. */
 export function riderRouteLabel(mode: TransitMode, routeNumber: string): string {
   if (mode === 'max') return 'MAX';
+  if (mode === 'streetcar') return STREETCAR_RIDER[routeNumber] ?? routeNumber;
   return routeNumber;
 }
 
@@ -165,8 +167,6 @@ function mapVehicle(raw: TrimetVehicleRaw): Vehicle | null {
     mode,
     lat: raw.latitude,
     lng: raw.longitude,
-    delaySeconds: raw.delay,
-    bearing: raw.bearing,
     inService: true,
   };
 }
@@ -221,6 +221,30 @@ export function companionVehicles(origin: GeoPoint, routes: string[]): Vehicle[]
       mode: 'max',
       inService: true,
     },
+    '193': {
+      vehicleId: 'sim-ns',
+      routeNumber: '193',
+      routeName: STREETCAR_NAME['193'],
+      signMessage: 'To NW 23rd',
+      mode: 'streetcar',
+      inService: true,
+    },
+    '194': {
+      vehicleId: 'sim-a',
+      routeNumber: '194',
+      routeName: STREETCAR_NAME['194'],
+      signMessage: 'A Loop',
+      mode: 'streetcar',
+      inService: true,
+    },
+    '195': {
+      vehicleId: 'sim-b',
+      routeNumber: '195',
+      routeName: STREETCAR_NAME['195'],
+      signMessage: 'B Loop',
+      mode: 'streetcar',
+      inService: true,
+    },
   };
   const out: Vehicle[] = [];
   routes.forEach((n, i) => {
@@ -246,7 +270,7 @@ export function companionVehiclesAt(vehicleAt: GeoPoint, user: GeoPoint, routes:
   }));
 }
 
-export async function fetchVehicles(origin?: GeoPoint): Promise<Vehicle[]> {
+async function fetchTrimetVehicles(): Promise<Vehicle[]> {
   try {
     const qs = new URLSearchParams({
       json: 'true',
@@ -254,15 +278,26 @@ export async function fetchVehicles(origin?: GeoPoint): Promise<Vehicle[]> {
       showNonRevenue: 'false',
     });
     const data = await trimetGet(`/ws/v2/vehicles?${qs}`);
-    const list = asArray(data.resultSet?.vehicle)
+    return asArray(data.resultSet?.vehicle)
       .map(mapVehicle)
       .filter((v): v is Vehicle => v != null);
-    if (!origin) return list;
-    return list
-      .map((v) => ({ ...v, distanceMeters: haversineMeters(origin, { lat: v.lat, lng: v.lng }) }))
-      .filter((v) => (v.distanceMeters ?? Infinity) <= 250)
-      .sort((a, b) => (a.distanceMeters ?? 0) - (b.distanceMeters ?? 0));
   } catch {
     return [];
   }
+}
+
+export async function fetchVehicles(origin?: GeoPoint): Promise<Vehicle[]> {
+  const [trimet, streetcar] = await Promise.all([fetchTrimetVehicles(), fetchStreetcarVehicles()]);
+  const seen = new Set<string>();
+  const list: Vehicle[] = [];
+  for (const v of [...streetcar, ...trimet]) {
+    if (seen.has(v.vehicleId)) continue;
+    seen.add(v.vehicleId);
+    list.push(v);
+  }
+  if (!origin) return list;
+  return list
+    .map((v) => ({ ...v, distanceMeters: haversineMeters(origin, { lat: v.lat, lng: v.lng }) }))
+    .filter((v) => (v.distanceMeters ?? Infinity) <= 250)
+    .sort((a, b) => (a.distanceMeters ?? 0) - (b.distanceMeters ?? 0));
 }

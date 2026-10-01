@@ -5,7 +5,6 @@ export function ChoiceList<T>({
   emptyText,
   itemKey,
   onPick,
-  leavingKey,
   locked,
   children,
 }: {
@@ -13,7 +12,6 @@ export function ChoiceList<T>({
   emptyText: string;
   itemKey: (item: T) => string;
   onPick: (item: T) => void;
-  leavingKey?: string | null;
   locked?: boolean;
   children: (item: T) => ReactNode;
 }) {
@@ -23,22 +21,13 @@ export function ChoiceList<T>({
 
   return (
     <ul className="vehicle-list">
-      {items.map((item) => {
-        const key = itemKey(item);
-        const leaving = key === leavingKey;
-        return (
-          <li key={key} className={leaving ? 'leaving' : undefined}>
-            <button
-              type="button"
-              className="vehicle-row"
-              disabled={locked || Boolean(leavingKey)}
-              onClick={() => onPick(item)}
-            >
-              {children(item)}
-            </button>
-          </li>
-        );
-      })}
+      {items.map((item) => (
+        <li key={itemKey(item)}>
+          <button type="button" className="vehicle-row" disabled={locked} onClick={() => onPick(item)}>
+            {children(item)}
+          </button>
+        </li>
+      ))}
     </ul>
   );
 }

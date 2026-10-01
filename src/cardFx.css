@@ -66,7 +66,93 @@
 .card-fx-revealing .card-fx-glare {
   animation:
     card-fx-glare-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both,
-    card-fx-glare-out 1.15s 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+    card-fx-glare-out 1.55s 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.card-fx-rim {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 12px;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.card-fx-revealing .card-fx-rim {
+  animation: card-fx-rim 1.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.card-fx-uncommon.card-fx-revealing .card-fx-glare {
+  animation:
+    card-fx-glare-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both,
+    card-fx-glare-out 2.2s 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.card-fx-uncommon.card-fx-revealing .card-fx-rim {
+  animation: card-fx-rim-uncommon 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.card-fx-uncommon.card-fx-revealing .card-tile-face::before,
+.card-fx-uncommon.card-fx-revealing .card-tile-face::after {
+  animation: card-fx-uncommon-face 2.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes card-fx-rim {
+  0% {
+    opacity: 0;
+    box-shadow:
+      0 0 0 0 color-mix(in srgb, var(--rim-color, #fff) 0%, transparent),
+      0 0 0 0 rgba(255, 255, 255, 0);
+  }
+  14% {
+    opacity: 1;
+    box-shadow:
+      0 0 0 2px color-mix(in srgb, var(--rim-color, #fff) 85%, white),
+      0 0 22px 8px color-mix(in srgb, var(--rim-color, #fff) 55%, transparent),
+      0 0 48px 16px rgba(255, 255, 255, 0.28);
+  }
+  100% {
+    opacity: 0;
+    box-shadow:
+      0 0 0 6px color-mix(in srgb, var(--rim-color, #fff) 0%, transparent),
+      0 0 36px 20px transparent,
+      0 0 64px 28px rgba(255, 255, 255, 0);
+  }
+}
+
+@keyframes card-fx-rim-uncommon {
+  0% {
+    opacity: 0;
+    box-shadow:
+      0 0 0 0 color-mix(in srgb, var(--rim-color, #fff) 0%, transparent),
+      0 0 0 0 rgba(255, 255, 255, 0);
+  }
+  11% {
+    opacity: 1;
+    box-shadow:
+      0 0 0 2px color-mix(in srgb, var(--rim-color, #fff) 92%, white),
+      0 0 28px 10px color-mix(in srgb, var(--rim-color, #fff) 68%, transparent),
+      0 0 56px 20px rgba(255, 255, 255, 0.4);
+  }
+  100% {
+    opacity: 0;
+    box-shadow:
+      0 0 0 6px color-mix(in srgb, var(--rim-color, #fff) 0%, transparent),
+      0 0 40px 22px transparent,
+      0 0 72px 32px rgba(255, 255, 255, 0);
+  }
+}
+
+@keyframes card-fx-uncommon-face {
+  0% {
+    opacity: var(--shine-op, 0.21);
+  }
+  10% {
+    opacity: calc(var(--shine-op, 0.21) + 0.08);
+  }
+  100% {
+    opacity: var(--shine-op, 0.21);
+  }
 }
 
 @keyframes card-fx-glare-in {
@@ -92,7 +178,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .card-fx-revealing .card-fx-glare {
+  .card-fx-revealing .card-fx-glare,
+  .card-fx-revealing .card-fx-rim,
+  .card-fx-uncommon.card-fx-revealing .card-tile-face::before,
+  .card-fx-uncommon.card-fx-revealing .card-tile-face::after {
     animation: none;
   }
 }

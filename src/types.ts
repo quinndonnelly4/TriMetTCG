@@ -1,5 +1,5 @@
 export type TransitMode = 'bus' | 'max' | 'wes' | 'streetcar';
-export type RideSource = 'nearby' | 'manual' | 'onboard';
+export type RideSource = 'onboard';
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'legendary';
 export type CardKind = 'vehicle' | 'route' | 'station' | 'operator';
 export type AlbumSection = 'bus' | 'train' | 'streetcar' | 'special';
@@ -42,10 +42,10 @@ export interface CardDef {
   type: CardKind;
   flavor: string;
   color: string;
-  /** Emoji placeholder until real art lands. */
+  /** Emoji used when no full-face WebP is available. */
   art: string;
-  /** Optional image path; takes over the art square when set. */
-  artSrc?: string;
+  /** Public path for full-face art, e.g. `/art/line-20.webp`. */
+  image: string;
   unlockBias?: TransitMode;
 }
 
@@ -57,8 +57,6 @@ export interface Vehicle {
   mode: TransitMode;
   lat: number;
   lng: number;
-  delaySeconds?: number;
-  bearing?: number;
   distanceMeters?: number;
   inService: boolean;
 }
@@ -69,7 +67,6 @@ export interface GpsSample extends GeoPoint {
 
 export interface OnboardGuess {
   vehicle: Vehicle;
-  hits: number;
   distanceMeters: number;
 }
 
@@ -78,12 +75,6 @@ export interface GeoPoint {
   lng: number;
 }
 
-export function rideTripKey(
-  ride: Pick<Ride, 'startStopId' | 'routeNumber' | 'destStopId' | 'vehicleId' | 'source'>,
-): string {
-  if (ride.source === 'onboard') return `onboard|${ride.routeNumber}`;
-  if (ride.startStopId && ride.destStopId) {
-    return `${ride.startStopId}|${ride.routeNumber}|${ride.destStopId}`;
-  }
-  return ride.vehicleId ?? ride.routeNumber;
+export function rideTripKey(ride: Pick<Ride, 'routeNumber'>): string {
+  return `onboard|${ride.routeNumber}`;
 }

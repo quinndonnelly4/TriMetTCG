@@ -30,6 +30,12 @@ export function cardById(id: string): CardDef | undefined {
   return cards.find((c) => c.id === id);
 }
 
+export function previewPackCards(): CardDef[] {
+  const pick = (rarity: CardDef['rarity'], count: number) =>
+    cards.filter((card) => card.rarity === rarity).slice(0, count);
+  return [...pick('common', 2), ...pick('uncommon', 1), ...pick('rare', 1), ...pick('legendary', 1)];
+}
+
 function pickWeighted(mode: TransitMode): CardDef {
   const weights = cards.map((c) => packWeightForRide(c, mode));
   const total = weights.reduce((s, w) => s + w, 0);

@@ -44,13 +44,11 @@ export function routeCompendium(rides: Ride[]) {
       if (Number.isFinite(na) && Number.isFinite(nb) && na !== nb) return na - nb;
       return a.localeCompare(b);
     });
-    const labelById = new Map(group.routes.map((route) => [route.id, route.label]));
     return {
       mode: group.mode,
       title: group.title,
       ridden: ids.length,
       total: group.routes.length,
-      lines: ids.map((id) => labelById.get(id) ?? id),
     };
   });
 }

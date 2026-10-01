@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { ConfirmDebug } from '../components/ConfirmDebug';
 import { LinePicker } from '../components/LinePicker';
 import { PackReveal } from '../components/PackReveal';
 import { RideHub } from '../components/RideHub';
@@ -9,12 +10,11 @@ import {
   haversineMeters,
   parseSimQuery,
   pointAlongPath,
-  RIDE_CONFIRM_MOVE_M,
-  RIDE_CONFIRM_RADIUS_M,
   SIM_TICK_MS,
 } from '../lib/geo';
+import { sampleConfirm, type ConfirmSample } from '../lib/confirmRide';
 import { guessOnboardLines } from '../lib/onboard';
-import { allCards, cardById, completeCheckIn, newRideId } from '../lib/packs';
+import { cardById, completeCheckIn, newRideId, previewPackCards } from '../lib/packs';
 import { cooldownRemaining, listRecentReceipts } from '../lib/storage';
 import {
   companionVehiclesAt,
@@ -73,6 +73,7 @@ export function HomePage() {
   const simKey = onHome ? location.search : homeSearchRef.current;
   const sim = useMemo(() => parseSimQuery(simKey), [simKey]);
   const previewPack = new URLSearchParams(simKey).get('pack') === 'preview';
+  const liveConfirmHud = Boolean(sim) || new URLSearchParams(simKey).get('hud') === '1';
   const [pageVisible, setPageVisible] = useState(
     () => typeof document === 'undefined' || document.visibilityState === 'visible',
   );
@@ -86,7 +87,6 @@ export function HomePage() {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [onboardGuesses, setOnboardGuesses] = useState<OnboardGuess[]>([]);
-  const [leavingRoute, setLeavingRoute] = useState<string | null>(null);
   const [playOpen, setPlayOpen] = useState(false);
   const [onboardOpen, setOnboardOpen] = useState(false);
   const [scanId, setScanId] = useState(0);
@@ -103,9 +103,12 @@ export function HomePage() {
     vehicleId: string;
     routeNumber: string;
     vehicleStart: GeoPoint;
+    riderStart: GeoPoint;
+    pickM: number;
     draft: Omit<Ride, 'id' | 'checkedInAt'>;
   } | null>(null);
-  const [vehicleMovedM, setVehicleMovedM] = useState(0);
+  const [confirmReady, setConfirmReady] = useState(false);
+  const [confirmSample, setConfirmSample] = useState<ConfirmSample | null>(null);
   const traveledRef = useRef(0);
   const dismissedRoutes = useRef(new Set<string>());
   const fanfareRef = useRef<AudioContext | null>(null);
@@ -113,6 +116,8 @@ export function HomePage() {
   const awardingRef = useRef(false);
   const pendingRef = useRef(pendingConfirm);
   pendingRef.current = pendingConfirm;
+  const lastVehicleRef = useRef<GeoPoint | null>(null);
+  const considerAwardRef = useRef<() => void>(() => {});
 
   const transitLive = polling && (onboardOpen || Boolean(pendingConfirm));
   const hasFix = origin !== null;
@@ -138,9 +143,10 @@ export function HomePage() {
   useEffect(() => {
     setOnboardGuesses([]);
     setSamples([]);
-    setLeavingRoute(null);
     setPendingConfirm(null);
-    setVehicleMovedM(0);
+    setConfirmReady(false);
+    setConfirmSample(null);
+    lastVehicleRef.current = null;
     setPack(null);
     setAwaitingPack(false);
     setNotice(null);
@@ -155,12 +161,56 @@ export function HomePage() {
       setOrigin(sim.start);
       setSamples([{ ...sim.start, at: Date.now() }]);
     }
+    if (sim?.autoConfirm) {
+      if (!fanfareRef.current) fanfareRef.current = createFanfareContext();
+      setPlayOpen(true);
+      setStartPurged(true);
+      setHopValid(true);
+      const vehicle = companionVehiclesAt(sim.start, sim.start, sim.routes)[0];
+      if (vehicle) {
+        const riderStart = sim.start;
+        const vehicleStart = { lat: vehicle.lat, lng: vehicle.lng };
+        lastVehicleRef.current = vehicleStart;
+        const pickM = haversineMeters(riderStart, vehicleStart);
+        const next = {
+          vehicleId: vehicle.vehicleId,
+          routeNumber: vehicle.routeNumber,
+          vehicleStart,
+          riderStart,
+          pickM,
+          draft: {
+            vehicleId: vehicle.vehicleId,
+            routeNumber: vehicle.routeNumber,
+            routeName: vehicle.routeName,
+            signMessage: vehicle.signMessage,
+            mode: vehicle.mode,
+            startStopId: `onboard-${vehicle.routeNumber}`,
+            startStopName: 'On board',
+            destStopId: `headsign-${vehicle.vehicleId}`,
+            destStopName: vehicle.signMessage || 'In service',
+            lat: riderStart.lat,
+            lng: riderStart.lng,
+            source: 'onboard' as const,
+          },
+        };
+        setPendingConfirm(next);
+        setConfirmSample(
+          sampleConfirm({
+            pickM,
+            riderStart,
+            vehicleStart,
+            riderNow: riderStart,
+            vehicleNow: vehicleStart,
+          }),
+        );
+      }
+    }
   }, [sim]);
 
   useEffect(() => {
     if (!previewPack) return;
     if (!fanfareRef.current) fanfareRef.current = createFanfareContext();
-    setPack(allCards().slice(0, 3));
+    setPack(previewPackCards());
   }, [previewPack]);
 
   useEffect(() => {
@@ -196,9 +246,15 @@ export function HomePage() {
         const gps = sim.gpsFollowsVehicle ? vehicleAt : sim.start;
         const at = Date.now();
         setOrigin(gps);
-        setSamples((prev) => [...prev.slice(-12), { ...gps, at }]);
+        setSamples((prev) => {
+          const next = [...prev.slice(-12), { ...gps, at }];
+          samplesRef.current = next;
+          return next;
+        });
+        originRef.current = gps;
         if (sim.routes.length) setVehicles(companionVehiclesAt(vehicleAt, gps, sim.routes));
-        setVehicleMovedM(haversineMeters(pendingRef.current.vehicleStart, vehicleAt));
+        lastVehicleRef.current = vehicleAt;
+        considerAwardRef.current();
       }, SIM_TICK_MS);
       return () => window.clearInterval(tick);
     }
@@ -214,8 +270,15 @@ export function HomePage() {
     const watch = navigator.geolocation.watchPosition(
       (pos) => {
         const point = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        const at = Date.now();
         setOrigin(point);
-        setSamples((prev) => [...prev.slice(-12), { ...point, at: Date.now() }]);
+        setSamples((prev) => {
+          const next = [...prev.slice(-12), { ...point, at }];
+          samplesRef.current = next;
+          return next;
+        });
+        originRef.current = point;
+        considerAwardRef.current();
       },
       () => undefined,
       { enableHighAccuracy: true, maximumAge: 5_000, timeout: 12_000 },
@@ -230,26 +293,16 @@ export function HomePage() {
   samplesRef.current = samples;
   const vehiclesRef = useRef(vehicles);
   vehiclesRef.current = vehicles;
-  const leavingRouteRef = useRef(leavingRoute);
-  leavingRouteRef.current = leavingRoute;
 
   useEffect(() => {
     let cancelled = false;
 
     function applyPicker(list: Vehicle[]) {
-      const fresh = guessOnboardLines(samplesRef.current, list).filter((g) => {
-        const route = g.vehicle.routeNumber;
-        if (route === leavingRouteRef.current) return true;
-        return !dismissedRoutes.current.has(route);
-      });
-      setOnboardGuesses((prev) => {
-        const leaving = leavingRouteRef.current;
-        if (!leaving) return fresh;
-        const still = fresh.some((g) => g.vehicle.routeNumber === leaving);
-        if (still) return fresh;
-        const keep = prev.find((g) => g.vehicle.routeNumber === leaving);
-        return keep ? [...fresh, keep] : fresh;
-      });
+      setOnboardGuesses(
+        guessOnboardLines(samplesRef.current, list).filter(
+          (g) => !dismissedRoutes.current.has(g.vehicle.routeNumber),
+        ),
+      );
     }
 
     async function loadVehicles() {
@@ -284,21 +337,8 @@ export function HomePage() {
       if (!pending || awardingRef.current) return;
       const v = list.find((x) => x.vehicleId === pending.vehicleId);
       if (!v) return;
-      const moved = haversineMeters(pending.vehicleStart, { lat: v.lat, lng: v.lng });
-      setVehicleMovedM(moved);
-      if (moved < RIDE_CONFIRM_MOVE_M) return;
-      const here = samplesRef.current.at(-1) ?? originRef.current;
-      if (!here) return;
-      const d = haversineMeters(here, { lat: v.lat, lng: v.lng });
-      awardingRef.current = true;
-      pendingRef.current = null;
-      setPendingConfirm(null);
-      if (d <= RIDE_CONFIRM_RADIUS_M) {
-        void confirmTrip(pending.routeNumber, { ...pending.draft, lat: here.lat, lng: here.lng });
-      } else {
-        awardingRef.current = false;
-        setNotice('Not close enough after it moved');
-      }
+      lastVehicleRef.current = { lat: v.lat, lng: v.lng };
+      considerAwardRef.current();
     }
 
     if (!transitLive) return;
@@ -314,13 +354,13 @@ export function HomePage() {
   }, [sim, pendingConfirm, transitLive, scanId, hasFix]);
 
   async function confirmTrip(routeNumber: string, next: Omit<Ride, 'id' | 'checkedInAt'>) {
-    if (pack || leavingRoute || awaitingPack) return;
+    if (pack || awaitingPack) return;
     setBusy(true);
     setNotice(null);
     try {
       const ride: Ride = { ...next, id: newRideId(), checkedInAt: Date.now() };
       const wait = await cooldownRemaining(rideTripKey(ride));
-      if (wait > 0) {
+      if (wait > 0 && !sim?.autoConfirm) {
         setNotice(`Wait ${Math.ceil(wait / 60_000)} min to log this line again`);
         awardingRef.current = false;
         return;
@@ -328,7 +368,6 @@ export function HomePage() {
       const cards = await completeCheckIn(ride);
       dismissedRoutes.current.add(routeNumber);
       setOnboardGuesses([]);
-      setLeavingRoute(null);
       setOnboardOpen(false);
       setAwaitingPack(true);
       packTimers.current.forEach((t) => window.clearTimeout(t));
@@ -344,9 +383,32 @@ export function HomePage() {
     }
   }
 
+  considerAwardRef.current = () => {
+    const pending = pendingRef.current;
+    if (!pending || awardingRef.current) return;
+    const vehicleAt = lastVehicleRef.current;
+    if (!vehicleAt) return;
+    const here = samplesRef.current.at(-1) ?? originRef.current;
+    if (!here) return;
+    const sample = sampleConfirm({
+      pickM: pending.pickM,
+      riderStart: pending.riderStart,
+      vehicleStart: pending.vehicleStart,
+      riderNow: here,
+      vehicleNow: vehicleAt,
+    });
+    setConfirmSample(sample);
+    if (sample.b && sample.c) setConfirmReady(true);
+    if (!sample.pass) return;
+    awardingRef.current = true;
+    pendingRef.current = null;
+    setPendingConfirm(null);
+    void confirmTrip(pending.routeNumber, { ...pending.draft, lat: here.lat, lng: here.lng });
+  };
+
   function confirmOnboard(guess: OnboardGuess) {
     if (!fanfareRef.current) fanfareRef.current = createFanfareContext();
-    if (pendingConfirm || busy || leavingRoute || awaitingPack || pack) return;
+    if (pendingConfirm || busy || awaitingPack || pack) return;
     const v = guess.vehicle;
     const draft: Omit<Ride, 'id' | 'checkedInAt'> = {
       vehicleId: v.vehicleId,
@@ -369,13 +431,32 @@ export function HomePage() {
         return;
       }
       setNotice(null);
-      setVehicleMovedM(0);
+      setConfirmReady(false);
+      lastVehicleRef.current = { lat: v.lat, lng: v.lng };
+      const riderStart = samplesRef.current.at(-1) ?? originRef.current;
+      if (!riderStart) {
+        setNotice('Need a location fix to check in');
+        return;
+      }
+      const vehicleStart = { lat: v.lat, lng: v.lng };
+      const pickM = haversineMeters(riderStart, vehicleStart);
       setPendingConfirm({
         vehicleId: v.vehicleId,
         routeNumber: v.routeNumber,
-        vehicleStart: { lat: v.lat, lng: v.lng },
+        vehicleStart,
+        riderStart,
+        pickM,
         draft,
       });
+      setConfirmSample(
+        sampleConfirm({
+          pickM,
+          riderStart,
+          vehicleStart,
+          riderNow: riderStart,
+          vehicleNow: vehicleStart,
+        }),
+      );
     })();
   }
 
@@ -416,7 +497,6 @@ export function HomePage() {
           {onboardOpen ? (
             <LinePicker
               guesses={onboardGuesses}
-              leavingKey={leavingRoute}
               locked={busy || awaitingPack || Boolean(pendingConfirm)}
               onPick={confirmOnboard}
               onDone={() => setOnboardOpen(false)}
@@ -456,11 +536,17 @@ export function HomePage() {
               Stay on the {riderRouteLabel(pendingConfirm.draft.mode, pendingConfirm.routeNumber)} to
               get a pack!
             </p>
-            <progress
-              className="ride-progress"
-              max={RIDE_CONFIRM_MOVE_M}
-              value={Math.min(vehicleMovedM, RIDE_CONFIRM_MOVE_M)}
-            />
+            <div className="confirm-wait" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </div>
+            <p className="confirm-status">
+              {confirmReady ? 'Matching your location…' : 'Keep riding…'}
+            </p>
+            {liveConfirmHud && confirmSample ? (
+              <ConfirmDebug sample={confirmSample} retrying={!confirmSample.pass} />
+            ) : null}
             <div className="row-actions">
               <button
                 type="button"
@@ -469,8 +555,10 @@ export function HomePage() {
                   pendingRef.current = null;
                   awardingRef.current = false;
                   traveledRef.current = 0;
+                  lastVehicleRef.current = null;
                   setPendingConfirm(null);
-                  setVehicleMovedM(0);
+                  setConfirmReady(false);
+                  setConfirmSample(null);
                 }}
               >
                 Cancel

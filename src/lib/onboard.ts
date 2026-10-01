@@ -20,7 +20,6 @@ export function guessOnboardLines(samples: GpsSample[], vehicles: Vehicle[]): On
     if (bestByRoute.has(key)) continue;
     bestByRoute.set(key, {
       vehicle: { ...hit.vehicle, distanceMeters: hit.distanceMeters },
-      hits: 1,
       distanceMeters: hit.distanceMeters,
     });
   }
